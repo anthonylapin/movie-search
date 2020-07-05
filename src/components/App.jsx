@@ -5,10 +5,45 @@ import Movie from "./Movie";
 import Grid from '@material-ui/core/Grid';
 
 class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            movies: []
+        };
+    }
+
+    handleSearch = (searchMovie) => {
+        const addMovie = (newMovie) => {
+            this.setState((state, props) => ({ movies: [...state.movies, newMovie] }));
+        }
+
+        const resetMovies = () => {
+            this.setState({
+                movies: []
+            });
+        }
+
+        fetch(`https://www.omdbapi.com/?s=${searchMovie}&apikey=4a3b711b`)
+            .then(response => response.json())
+            .then(jsonResponse => {
+                if (jsonResponse.Response === "True") {
+                    const foundMovies = jsonResponse.Search;
+
+                    resetMovies();
+                    foundMovies.forEach(foundMovie => {
+                        addMovie(foundMovie);
+                    });
+                }
+                else {
+                    alert(jsonResponse.Error);
+                }
+            });
+    }
+
     render() {
         return (
             <div>
-                <Header />
+                <Header search={this.handleSearch} />
 
                 <Grid
                     container
@@ -17,7 +52,9 @@ class App extends React.Component {
                     alignItems="center"
                     className="content"
                 >
-                    <Movie title="Avengers" image="https://m.media-amazon.com/images/M/MV5BNDYxNjQyMjAtNTdiOS00NGYwLWFmNTAtNThmYjU5ZGI2YTI1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg" year="2012" link="https://www.imdb.com/title/tt4154796/" />
+                    {this.state.movies.map((movie, index) => (
+                        <Movie movie={movie} key={index} />
+                    ))}
                 </Grid>
                 <Footer />
 
@@ -25,5 +62,8 @@ class App extends React.Component {
         );
     }
 }
+
+
+
 
 export default App;
